@@ -1,0 +1,91 @@
+#include "widget.h"
+#include "ui_widget.h"
+
+#include "senddatathread.h"
+
+
+#include <QDebug>
+#include <QThread>
+#include <QCloseEvent>
+
+Widget::Widget(QWidget *parent) :
+    QWidget(parent),
+    ui(new Ui::Widget)
+{
+    ui->setupUi(this);
+
+    init();
+}
+
+Widget::~Widget()
+{
+    delete ui;
+}
+
+void Widget::init()
+{
+    qDebug()<<"widget id:"<<QThread::currentThreadId();
+
+    initForm();
+
+    initPlot();
+
+    initConnect();
+}
+
+void Widget::initForm()
+{
+    this->showMaximized();
+
+    m_pThread = new SendDataThread;
+
+    connect(qApp,SIGNAL(aboutToQuit()),
+            m_pThread,SLOT(setThreadStop()));
+    connect(m_pThread,SIGNAL(finished()),
+            m_pThread,SLOT(deleteLater()));
+
+    connect (m_pThread,SIGNAL(signalSendData(QByteArray)),
+             this,SLOT(slotReData(QByteArray)));
+
+    m_pThread->start();
+
+}
+
+void Widget::initPlot()
+{
+    m_plots.append (ui->plot1);
+    m_plots.append (ui->plot2);
+    m_plots.append (ui->plot3);
+
+    m_plots.at (0)->yAxis->setLabel ("温度值(单位:°)");
+    m_plots.at (1)->yAxis->setLabel ("湿度值(单位:%)");
+    m_plots.at (2)->yAxis->setLabel ("力度值(单位:N)");
+
+    //设置坐标轴范围
+    m_plots.at (0)->yAxis->setRange (0,100);
+    m_plots.at (1)->yAxis->setRange (0,100);
+    m_plots.at (2)->yAxis->setRange (0,100);
+
+    foreach (QCustomPlot *plot, m_plots) {
+        plot->axisRect ()->insetLayout ()->setInsetAlignment (0,Qt::AlignTop |
+                                                              Qt::AlignTop);
+        plot->legend->setBrush (Qcolor(255.255.255.200));
+    }
+}
+
+void Widget::initConnect()
+{
+    //
+}
+
+void Widget::closeEvent(QCloseEvent *event)
+{
+    m_pThread->setThreadStop ();
+
+    event->accept ();
+}
+
+void Widget::slotReData(const QByteArray &buf)
+{
+    qDebug()<<buf;
+}

@@ -29,6 +29,7 @@ win32{
         OBJECTS_DIR = $$target_path/obj
 }
 
+
 DEPENDPATH += bin
 
 include($$PWD/qcustomplot/qcustomplot.pri)
@@ -43,3 +44,6 @@ HEADERS  += widget.h \
     senddatathread.h
 
 FORMS    += widget.ui
+
+RESOURCES += \
+    images.qrc

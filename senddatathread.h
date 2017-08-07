@@ -1,7 +1,8 @@
-﻿#ifndef SENDDATATHREAD_H
+#ifndef SENDDATATHREAD_H
 #define SENDDATATHREAD_H
 
 #include <QThread>
+#include <QMutex>
 
 class SendDataThread : public QThread
 {
@@ -19,11 +20,12 @@ protected:
 Q_SIGNALS:
     void signalSendData(const QByteArray &buff);
 
-private Q_SLOTS:
+public Q_SLOTS:
     void setThreadStop();
 
 private:
     volatile bool m_isStopped;
+    QMutex mutex;
 };
 
 #endif // SENDDATATHREAD_H

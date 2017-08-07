@@ -1,4 +1,4 @@
-﻿#include "senddatathread.h"
+#include "senddatathread.h"
 
 #include <QDebug>
 
@@ -22,13 +22,25 @@ void SendDataThread::run()
 {
     qDebug()<<"SendDataThread id:"<<QThread::currentThreadId();
 
-    while (!m_isStopped)
+    while (1)
     {
-        msleep(10);
+        QMutexLocker locker(&mutex);
+        if (m_isStopped)
+            break;
+
+        QByteArray buff;
+        buff.append ("hello");
+
+        emit signalSendData (buff);
+
+        msleep(400);
     }
+    m_isStopped = false;
 }
 
 void SendDataThread::setThreadStop()
 {
-     m_isStopped = true;
+    QMutexLocker locker(&mutex);
+
+    m_isStopped = true;
 }
